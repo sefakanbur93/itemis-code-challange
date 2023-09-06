@@ -86,6 +86,7 @@ function handleSettingInformation(input: string) {
 export function handleInput(input: string): string | unknown {
     try {
         if(!checkIfQuestion(input)) {
+            handleSettingInformation(input)
         } else if(input.startsWith('how much')) {
             const alienNumber = input.split(' is ')[1].replace('?', '').trim()
 
@@ -93,6 +94,34 @@ export function handleInput(input: string): string | unknown {
 
             return alienNumber + ' is ' + arabicNumber
         } else if (input.startsWith('how many')) {
+            const numberAndResource = input.split(' is ')[1].replace('?', '').trim().split(' ')
+
+            let alienNumber = ''
+            let resource = ''
+            for (let i=0; i< numberAndResource.length; i++) {
+                if(translationMap.has(numberAndResource[i])) {
+                    alienNumber += numberAndResource[i] + ' '
+                    continue
+                }
+
+                resource = numberAndResource[i]
+                break
+            }
+
+            if(alienNumber === '') {
+                return errorMessage
+            }
+
+            const amount = getAlienNumberInArabicNumber(alienNumber.trim())
+            const costPerResource = resourceCostMap.get(resource)
+
+            if(!costPerResource) {
+                return errorMessage
+            }
+
+            const cost = costPerResource * amount
+
+            return alienNumber.trim() + ' ' + resource +' is '+ cost +' Credits'
         }
     } catch (e) {
         return errorMessage
