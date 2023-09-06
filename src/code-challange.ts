@@ -39,7 +39,7 @@ function getRomanNumberInArabicNumber(romanNumber: string): number {
     return arabicNumber
 }
 
-function getWordInArabicNumber(alienNumber: string): number {
+function getAlienNumberInArabicNumber(alienNumber: string): number {
     const alienDigitArray = alienNumber.trim().split(' ')
     let romanNumber = ''
     alienDigitArray.forEach((x) => {
@@ -75,7 +75,7 @@ function handleSettingInformation(input: string) {
         })
 
         const resource = resourceWithAmount.replace(amountInAlienNumber.trim(), '')
-        const amountInArabicNumber = getWordInArabicNumber(amountInAlienNumber)
+        const amountInArabicNumber = getAlienNumberInArabicNumber(amountInAlienNumber)
         const costPerResource = costWithAmount / amountInArabicNumber
         resourceCostMap.set(resource.trim(), costPerResource)
         return
@@ -87,7 +87,11 @@ export function handleInput(input: string): string | unknown {
     try {
         if(!checkIfQuestion(input)) {
         } else if(input.startsWith('how much')) {
+            const alienNumber = input.split(' is ')[1].replace('?', '').trim()
 
+            const arabicNumber = getAlienNumberInArabicNumber(alienNumber)
+
+            return alienNumber + ' is ' + arabicNumber
         } else if (input.startsWith('how many')) {
         }
     } catch (e) {
