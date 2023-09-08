@@ -1,12 +1,17 @@
-const errorMessage = 'I have no idea what you are talking about'
-const regexSetCredits = new RegExp(/\b\w+(?:\s+\w+)*\s+is\s+(\d+\s+Credits)\b/)
-const regexSetRoman = new RegExp(/^\w+\sis\s[IVXLCDM]$/)
 const translationMap = new Map<string, string>();
 const romanArabicMap = new Map<string, number>([['I',1], ['V',5], ['X', 10],['L', 50],['C', 100],['D', 500],['M', 1000]])
 const resourceCostMap = new Map<string, number>()
+const errorMessage = 'I have no idea what you are talking about'
+const setRomanRegex = new RegExp(/^\w+\sis\s[IVXLCDM]$/)
+const howMuchQuestionString = 'how much is '
+const howManyQuestionString = 'how many Credits is '
+
+function getSetCreditsRegex() {
+    return new RegExp(`(${Array.from(translationMap.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
+}
 
 function checkIfQuestion(input: string): boolean {
-    return (input.startsWith('how much') || input.startsWith('how many')) && input.endsWith('?')
+    return (input.startsWith(howMuchQuestionString) || input.startsWith(howManyQuestionString)) && input.endsWith('?')
 }
 
 function getRomanNumberInArabicNumber(romanNumber: string): number {
@@ -48,79 +53,87 @@ function getIntergalacticNumberInArabicNumber(intergalacticNumber: Array<string>
     return getRomanNumberInArabicNumber(romanNumber)
 }
 
-function handleSettingInformation(input: string) {
-    if(regexSetRoman.test(input)) {
-        const intergalacticNumber = input.split(' ')[0]
-        const romanNumber = input.split(' ')[2]
+function handleTranslateNumber(input: string) {
+    const intergalacticNumber = input.split(' ')[0]
+    const romanNumber = input.split(' ')[2]
 
-        if(!romanArabicMap.has(romanNumber)) {
-            throw errorMessage
-        }
-
-        translationMap.set(intergalacticNumber, romanNumber)
-        return
-    } else if(regexSetCredits.test(input)) {
-        const resourceWithAmount = input.split(' is ')[0]
-        const costWithAmount = Number(input.split(' is ')[1].split(' ')[0])
-
-        const resourceWithAmountArray = resourceWithAmount.split(' ')
-
-        const amountInIntergalacticNumber: Array<string> = []
-        resourceWithAmountArray.forEach((word) => {
-            if(translationMap.has(word)) {
-                amountInIntergalacticNumber.push(word)
-            }
-        })
-
-        const resource = resourceWithAmount.replace(amountInIntergalacticNumber.join(' '), '').trim()
-        const amountInArabicNumber = getIntergalacticNumberInArabicNumber(amountInIntergalacticNumber)
-        const costPerResource = costWithAmount / amountInArabicNumber
-        resourceCostMap.set(resource, costPerResource)
-        return
+    if(!romanArabicMap.has(romanNumber)) {
+        throw errorMessage
     }
-    throw errorMessage
+
+    translationMap.set(intergalacticNumber, romanNumber)
+    return
+}
+
+function handleSetResourceValue(input: string) {
+    const resourceWithAmount = input.split(' is ')[0]
+    const costWithAmount = Number(input.split(' is ')[1].split(' ')[0])
+
+    const resourceWithAmountArray = resourceWithAmount.split(' ')
+
+    const amountInIntergalacticNumber: Array<string> = []
+    resourceWithAmountArray.forEach((word) => {
+        if(translationMap.has(word)) {
+            amountInIntergalacticNumber.push(word)
+        }
+    })
+
+    const resource = resourceWithAmount.replace(amountInIntergalacticNumber.join(' '), '').trim()
+    const amountInArabicNumber = getIntergalacticNumberInArabicNumber(amountInIntergalacticNumber)
+    const costPerResource = costWithAmount / amountInArabicNumber
+    resourceCostMap.set(resource, costPerResource)
+}
+
+function handleHowMuchQuestion(input: string) {
+    const intergalacticNumber = input.replace(howMuchQuestionString, '').replace('?', '')
+
+    const arabicNumber = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
+
+    return `${intergalacticNumber}is ${arabicNumber}`
+}
+function handleHowManyQuestion(input: string) {
+    const numberAndResources = input.replace(howManyQuestionString, '').split(' ')
+
+    const intergalacticNumber:Array<string> = []
+    let resource = ''
+
+    for (let i=0; i< numberAndResources.length; i++) {
+        if(translationMap.has(numberAndResources[i])) {
+            intergalacticNumber.push(numberAndResources[i])
+            continue
+        }
+        if(resourceCostMap.has(numberAndResources[i])) {
+            resource = numberAndResources[i]
+            break
+        }
+    }
+
+    if(intergalacticNumber.length === 0) {
+        throw errorMessage
+    }
+
+    const amount = getIntergalacticNumberInArabicNumber(intergalacticNumber)
+    const costPerResource = resourceCostMap.get(resource)
+
+    if(!costPerResource) {
+        throw errorMessage
+    }
+
+    const cost = costPerResource * amount
+
+    return `${intergalacticNumber.join(' ')} ${resource} is ${cost} Credits`
 }
 
 export function handleInput(input: string): string | unknown {
     try {
-        if(!checkIfQuestion(input)) {
-            handleSettingInformation(input)
-        } else if(input.startsWith('how much')) {
-            const intergalacticNumber = input.split(' is ')[1].replace('?', '')
-
-            const arabicNumber = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
-
-            return `${intergalacticNumber}is ${arabicNumber}`
-        } else if (input.startsWith('how many')) {
-            const numberAndResources = input.split(' is ')[1].replace('?', '').trim().split(' ')
-
-            let intergalacticNumber = ''
-            let resource = ''
-
-            numberAndResources.forEach((numberAndResource) => {
-                if(translationMap.has(numberAndResource)) {
-                    intergalacticNumber += numberAndResource + ' '
-                    return
-                }
-
-                resource = numberAndResource
-                return
-            })
-
-            if(intergalacticNumber === '') {
-                return errorMessage
-            }
-
-            const amount = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
-            const costPerResource = resourceCostMap.get(resource)
-
-            if(!costPerResource) {
-                return errorMessage
-            }
-
-            const cost = costPerResource * amount
-
-            return `${intergalacticNumber}${resource} is ${cost} Credits`
+        if(setRomanRegex.test(input)) {
+            return handleTranslateNumber(input)
+        } else if(getSetCreditsRegex().test(input)){
+            return handleSetResourceValue(input)
+        } else if(input.startsWith(howMuchQuestionString)) {
+            return handleHowMuchQuestion(input);
+        } else if (input.startsWith(howManyQuestionString)) {
+            return handleHowManyQuestion(input)
         }
     } catch (e) {
         return errorMessage
