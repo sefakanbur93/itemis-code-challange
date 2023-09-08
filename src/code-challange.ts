@@ -39,10 +39,9 @@ function getRomanNumberInArabicNumber(romanNumber: string): number {
     return arabicNumber
 }
 
-function getAlienNumberInArabicNumber(alienNumber: string): number {
-    const alienDigitArray = alienNumber.trim().split(' ')
+function getIntergalacticNumberInArabicNumber(intergalacticNumber: Array<string>): number {
     let romanNumber = ''
-    alienDigitArray.forEach((x) => {
+    intergalacticNumber.forEach((x) => {
         romanNumber += translationMap.get(x)
     })
 
@@ -51,14 +50,14 @@ function getAlienNumberInArabicNumber(alienNumber: string): number {
 
 function handleSettingInformation(input: string) {
     if(regexSetRoman.test(input)) {
-        const alienNumber = input.split(' ')[0]
+        const intergalacticNumber = input.split(' ')[0]
         const romanNumber = input.split(' ')[2]
 
         if(!romanArabicMap.has(romanNumber)) {
             throw errorMessage
         }
 
-        translationMap.set(alienNumber, romanNumber)
+        translationMap.set(intergalacticNumber, romanNumber)
         return
     } else if(regexSetCredits.test(input)) {
         const resourceWithAmount = input.split(' is ')[0]
@@ -66,15 +65,15 @@ function handleSettingInformation(input: string) {
 
         const resourceWithAmountArray = resourceWithAmount.split(' ')
 
-        let amountInAlienNumber = ''
+        const amountInIntergalacticNumber: Array<string> = []
         resourceWithAmountArray.forEach((word) => {
             if(translationMap.has(word)) {
-                amountInAlienNumber += word+' '
+                amountInIntergalacticNumber.push(word)
             }
         })
 
-        const resource = resourceWithAmount.replace(amountInAlienNumber, '').trim()
-        const amountInArabicNumber = getAlienNumberInArabicNumber(amountInAlienNumber)
+        const resource = resourceWithAmount.replace(amountInIntergalacticNumber.join(' '), '').trim()
+        const amountInArabicNumber = getIntergalacticNumberInArabicNumber(amountInIntergalacticNumber)
         const costPerResource = costWithAmount / amountInArabicNumber
         resourceCostMap.set(resource, costPerResource)
         return
@@ -87,20 +86,20 @@ export function handleInput(input: string): string | unknown {
         if(!checkIfQuestion(input)) {
             handleSettingInformation(input)
         } else if(input.startsWith('how much')) {
-            const alienNumber = input.split(' is ')[1].replace('?', '')
+            const intergalacticNumber = input.split(' is ')[1].replace('?', '')
 
-            const arabicNumber = getAlienNumberInArabicNumber(alienNumber)
+            const arabicNumber = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
 
-            return `${alienNumber}is ${arabicNumber}`
+            return `${intergalacticNumber}is ${arabicNumber}`
         } else if (input.startsWith('how many')) {
             const numberAndResources = input.split(' is ')[1].replace('?', '').trim().split(' ')
 
-            let alienNumber = ''
+            let intergalacticNumber = ''
             let resource = ''
 
             numberAndResources.forEach((numberAndResource) => {
                 if(translationMap.has(numberAndResource)) {
-                    alienNumber += numberAndResource + ' '
+                    intergalacticNumber += numberAndResource + ' '
                     return
                 }
 
@@ -108,11 +107,11 @@ export function handleInput(input: string): string | unknown {
                 return
             })
 
-            if(alienNumber === '') {
+            if(intergalacticNumber === '') {
                 return errorMessage
             }
 
-            const amount = getAlienNumberInArabicNumber(alienNumber)
+            const amount = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
             const costPerResource = resourceCostMap.get(resource)
 
             if(!costPerResource) {
@@ -121,7 +120,7 @@ export function handleInput(input: string): string | unknown {
 
             const cost = costPerResource * amount
 
-            return `${alienNumber}${resource} is ${cost} Credits`
+            return `${intergalacticNumber}${resource} is ${cost} Credits`
         }
     } catch (e) {
         return errorMessage
