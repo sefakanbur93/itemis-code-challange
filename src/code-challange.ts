@@ -73,7 +73,7 @@ function handleSettingInformation(input: string) {
             }
         })
 
-        const resource = resourceWithAmount.replace(amountInAlienNumber, '')
+        const resource = resourceWithAmount.replace(amountInAlienNumber, '').trim()
         const amountInArabicNumber = getAlienNumberInArabicNumber(amountInAlienNumber)
         const costPerResource = costWithAmount / amountInArabicNumber
         resourceCostMap.set(resource, costPerResource)
@@ -91,7 +91,7 @@ export function handleInput(input: string): string | unknown {
 
             const arabicNumber = getAlienNumberInArabicNumber(alienNumber)
 
-            return alienNumber + ' is ' + arabicNumber
+            return `${alienNumber}is ${arabicNumber}`
         } else if (input.startsWith('how many')) {
             const numberAndResources = input.split(' is ')[1].replace('?', '').trim().split(' ')
 
@@ -121,7 +121,7 @@ export function handleInput(input: string): string | unknown {
 
             const cost = costPerResource * amount
 
-            return alienNumber.trim() + ' ' + resource +' is '+ cost +' Credits'
+            return `${alienNumber}${resource} is ${cost} Credits`
         }
     } catch (e) {
         return errorMessage
