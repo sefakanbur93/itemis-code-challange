@@ -10,7 +10,7 @@ function checkIfQuestion(input: string): boolean {
 }
 
 function getRomanNumberInArabicNumber(romanNumber: string): number {
-    const romanNumberArray = romanNumber.trim().split('')
+    const romanNumberArray = romanNumber.split('')
     let arabicNumber = 0
     let skipNextNumber = false
     for(let i=0; i<romanNumber.length; i++)  {
@@ -51,14 +51,14 @@ function getAlienNumberInArabicNumber(alienNumber: string): number {
 
 function handleSettingInformation(input: string) {
     if(regexSetRoman.test(input)) {
-        const alienNumber = input.split(' is ')[0]
-        const romanNumber = input.split(' is ')[1]
+        const alienNumber = input.split(' ')[0]
+        const romanNumber = input.split(' ')[2]
 
         if(!romanArabicMap.has(romanNumber)) {
             throw errorMessage
         }
 
-        translationMap.set(alienNumber.trim(), romanNumber.trim())
+        translationMap.set(alienNumber, romanNumber)
         return
     } else if(regexSetCredits.test(input)) {
         const resourceWithAmount = input.split(' is ')[0]
@@ -67,17 +67,16 @@ function handleSettingInformation(input: string) {
         const resourceWithAmountArray = resourceWithAmount.split(' ')
 
         let amountInAlienNumber = ''
-        resourceWithAmountArray.forEach((x) => {
-            const word = x.trim()
+        resourceWithAmountArray.forEach((word) => {
             if(translationMap.has(word)) {
                 amountInAlienNumber += word+' '
             }
         })
 
-        const resource = resourceWithAmount.replace(amountInAlienNumber.trim(), '')
+        const resource = resourceWithAmount.replace(amountInAlienNumber, '')
         const amountInArabicNumber = getAlienNumberInArabicNumber(amountInAlienNumber)
         const costPerResource = costWithAmount / amountInArabicNumber
-        resourceCostMap.set(resource.trim(), costPerResource)
+        resourceCostMap.set(resource, costPerResource)
         return
     }
     throw errorMessage
@@ -88,31 +87,32 @@ export function handleInput(input: string): string | unknown {
         if(!checkIfQuestion(input)) {
             handleSettingInformation(input)
         } else if(input.startsWith('how much')) {
-            const alienNumber = input.split(' is ')[1].replace('?', '').trim()
+            const alienNumber = input.split(' is ')[1].replace('?', '')
 
             const arabicNumber = getAlienNumberInArabicNumber(alienNumber)
 
             return alienNumber + ' is ' + arabicNumber
         } else if (input.startsWith('how many')) {
-            const numberAndResource = input.split(' is ')[1].replace('?', '').trim().split(' ')
+            const numberAndResources = input.split(' is ')[1].replace('?', '').trim().split(' ')
 
             let alienNumber = ''
             let resource = ''
-            for (let i=0; i< numberAndResource.length; i++) {
-                if(translationMap.has(numberAndResource[i])) {
-                    alienNumber += numberAndResource[i] + ' '
-                    continue
+
+            numberAndResources.forEach((numberAndResource) => {
+                if(translationMap.has(numberAndResource)) {
+                    alienNumber += numberAndResource + ' '
+                    return
                 }
 
-                resource = numberAndResource[i]
-                break
-            }
+                resource = numberAndResource
+                return
+            })
 
             if(alienNumber === '') {
                 return errorMessage
             }
 
-            const amount = getAlienNumberInArabicNumber(alienNumber.trim())
+            const amount = getAlienNumberInArabicNumber(alienNumber)
             const costPerResource = resourceCostMap.get(resource)
 
             if(!costPerResource) {
