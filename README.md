@@ -1,6 +1,10 @@
 ## How to build
 
-npm i
+npm run setup
+
+## How to run
+
+npm run dev
 
 ## How to run test
 
