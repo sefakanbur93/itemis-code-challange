@@ -3,18 +3,29 @@ const romanArabicMap = new Map<string, number>([['I',1], ['V',5], ['X', 10],['L'
 const resourceCostMap = new Map<string, number>()
 const errorMessage = 'I have no idea what you are talking about'
 const setRomanRegex = new RegExp(/^\w+\sis\s[IVXLCDM]$/)
+const romanNumberRegex = /^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
 const howMuchQuestionString = 'how much is '
 const howManyQuestionString = 'how many Credits is '
 
+// This regex should be dynamic. It requires already set translations.
 function getSetCreditsRegex() {
     return new RegExp(`(${Array.from(translationMap.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
 }
 
+function validateRomanNumber(romanNumber: string) {
+
+}
+
 function getRomanNumberInArabicNumber(romanNumber: string): number {
+    if(!romanNumberRegex.test(romanNumber)) {
+        throw new Error('Invalid Roman Number')
+    }
+
     const romanNumberArray = romanNumber.split('')
     let arabicNumber = 0
     let skipNextNumber = false
     for (let i=0; i < romanNumber.length; i++)  {
+        // The calculation with this number already done, so we can skip here.
         if(skipNextNumber) {
             skipNextNumber = false
             continue
@@ -23,11 +34,12 @@ function getRomanNumberInArabicNumber(romanNumber: string): number {
         const arabicNumberFromMap = romanArabicMap.get(romanNumberArray[i])
 
         if(!arabicNumberFromMap) {
-            throw errorMessage
+            throw new Error('Arabic number not found')
         }
 
         const nextNumber = i < romanNumber.length-1 ? romanArabicMap.get(romanNumberArray[i+1]) : undefined
 
+        // If there is next number, and it is bigger than this one we divide.
         if(nextNumber && (nextNumber > arabicNumberFromMap)) {
             arabicNumber += nextNumber - arabicNumberFromMap
             skipNextNumber = true
@@ -54,7 +66,7 @@ function handleTranslateNumber(input: string) {
     const romanNumber = input.split(' ')[2]
 
     if(!romanArabicMap.has(romanNumber)) {
-        throw errorMessage
+        throw new Error('Roman number not found')
     }
 
     translationMap.set(intergalacticNumber, romanNumber)
@@ -98,6 +110,8 @@ function handleHowManyQuestion(input: string) {
             intergalacticNumber.push(numberAndResources[i])
             continue
         }
+
+        // We skip every other word after resource due to invalid input
         if(resourceCostMap.has(numberAndResources[i])) {
             resource = numberAndResources[i]
             break
@@ -105,14 +119,14 @@ function handleHowManyQuestion(input: string) {
     }
 
     if(intergalacticNumber.length === 0) {
-        throw errorMessage
+        throw new Error('Invalid input. Intergalactic number and resource not found.')
     }
 
     const amount = getIntergalacticNumberInArabicNumber(intergalacticNumber)
     const costPerResource = resourceCostMap.get(resource)
 
-    if(!costPerResource) {
-        throw errorMessage
+    if (!costPerResource) {
+        throw new Error('Resource not found.')
     }
 
     const cost = costPerResource * amount
@@ -132,8 +146,10 @@ export function handleInput(input: string): string | unknown {
             return handleHowManyQuestion(input)
         }
     } catch (e) {
+        console.log(e)
         return errorMessage
     }
 
+    console.log('Invalid input.')
     return errorMessage
 }
