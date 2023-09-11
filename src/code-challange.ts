@@ -10,15 +10,11 @@ function getSetCreditsRegex() {
     return new RegExp(`(${Array.from(translationMap.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
 }
 
-function checkIfQuestion(input: string): boolean {
-    return (input.startsWith(howMuchQuestionString) || input.startsWith(howManyQuestionString)) && input.endsWith('?')
-}
-
 function getRomanNumberInArabicNumber(romanNumber: string): number {
     const romanNumberArray = romanNumber.split('')
     let arabicNumber = 0
     let skipNextNumber = false
-    for(let i=0; i<romanNumber.length; i++)  {
+    for (let i=0; i < romanNumber.length; i++)  {
         if(skipNextNumber) {
             skipNextNumber = false
             continue
