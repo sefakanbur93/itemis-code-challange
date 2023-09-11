@@ -12,10 +12,6 @@ function getSetCreditsRegex() {
     return new RegExp(`(${Array.from(translationMap.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
 }
 
-function validateRomanNumber(romanNumber: string) {
-
-}
-
 function getRomanNumberInArabicNumber(romanNumber: string): number {
     if(!romanNumberRegex.test(romanNumber)) {
         throw new Error('Invalid Roman Number')
