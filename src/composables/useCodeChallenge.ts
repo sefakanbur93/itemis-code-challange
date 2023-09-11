@@ -1,9 +1,9 @@
-import {computed} from "vue";
+import {computed, ref} from "vue";
 
 export default () => {
-    const translationMap = new Map<string, string>();
+    const translationMap = ref(new Map<string, string>());
     const romanArabicMap = new Map<string, number>([['I',1], ['V',5], ['X', 10],['L', 50],['C', 100],['D', 500],['M', 1000]])
-    const resourceCostMap = new Map<string, number>()
+    const resourceCostMap = ref(new Map<string, number>())
     const errorMessage = 'I have no idea what you are talking about'
     const setRomanRegex = new RegExp(/^\w+\sis\s[IVXLCDM]$/)
     const romanNumberRegex = /^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
@@ -12,11 +12,12 @@ export default () => {
 
     // This regex should be dynamic. It requires already set translations.
     const setCreditsRegex = computed<RegExp>(() => {
-        return new RegExp(`(${Array.from(translationMap.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
+        return new RegExp(`(${Array.from(translationMap.value.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
     })
 
     function getRomanNumberInArabicNumber(romanNumber: string): number {
         if(!romanNumberRegex.test(romanNumber)) {
+            console.log(romanNumber)
             throw new Error('Invalid Roman Number')
         }
 
@@ -54,13 +55,13 @@ export default () => {
     function getIntergalacticNumberInArabicNumber(intergalacticNumber: Array<string>): number {
         let romanNumber = ''
         intergalacticNumber.forEach((x) => {
-            romanNumber += translationMap.get(x)
+            romanNumber += translationMap.value.get(x)
         })
 
         return getRomanNumberInArabicNumber(romanNumber)
     }
 
-    function handleTranslateNumber(input: string): void {
+    function handleTranslateNumber(input: string): string {
         const intergalacticNumber = input.split(' ')[0]
         const romanNumber = input.split(' ')[2]
 
@@ -68,11 +69,11 @@ export default () => {
             throw new Error('Roman number not found')
         }
 
-        translationMap.set(intergalacticNumber, romanNumber)
-        return
+        translationMap.value.set(intergalacticNumber, romanNumber)
+        return 'Ok !'
     }
 
-    function handleSetResourceValue(input: string): void {
+    function handleSetResourceValue(input: string): string {
         const resourceWithAmount = input.split(' is ')[0]
         const costWithAmount = Number(input.split(' is ')[1].split(' ')[0])
 
@@ -80,7 +81,7 @@ export default () => {
 
         const amountInIntergalacticNumber: Array<string> = []
         resourceWithAmountArray.forEach((word) => {
-            if(translationMap.has(word)) {
+            if(translationMap.value.has(word)) {
                 amountInIntergalacticNumber.push(word)
             }
         })
@@ -88,15 +89,17 @@ export default () => {
         const resource = resourceWithAmount.replace(amountInIntergalacticNumber.join(' '), '').trim()
         const amountInArabicNumber = getIntergalacticNumberInArabicNumber(amountInIntergalacticNumber)
         const costPerResource = costWithAmount / amountInArabicNumber
-        resourceCostMap.set(resource, costPerResource)
+        resourceCostMap.value.set(resource, costPerResource)
+
+        return 'Ok !'
     }
 
     function handleHowMuchQuestion(input: string): string {
-        const intergalacticNumber = input.replace(howMuchQuestionString, '').replace('?', '')
+        const intergalacticNumber = input.replace(howMuchQuestionString, '').replace('?', '').trim()
 
         const arabicNumber = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
 
-        return `${intergalacticNumber}is ${arabicNumber}`
+        return `${intergalacticNumber} is ${arabicNumber}`
     }
     function handleHowManyQuestion(input: string): string {
         const numberAndResources = input.replace(howManyQuestionString, '').split(' ')
@@ -105,13 +108,13 @@ export default () => {
         let resource = ''
 
         for (let i=0; i< numberAndResources.length; i++) {
-            if(translationMap.has(numberAndResources[i])) {
+            if(translationMap.value.has(numberAndResources[i])) {
                 intergalacticNumber.push(numberAndResources[i])
                 continue
             }
 
             // We skip every other word after resource due to invalid input
-            if(resourceCostMap.has(numberAndResources[i])) {
+            if(resourceCostMap.value.has(numberAndResources[i])) {
                 resource = numberAndResources[i]
                 break
             }
@@ -122,7 +125,7 @@ export default () => {
         }
 
         const amount = getIntergalacticNumberInArabicNumber(intergalacticNumber)
-        const costPerResource = resourceCostMap.get(resource)
+        const costPerResource = resourceCostMap.value.get(resource)
 
         if (!costPerResource) {
             throw new Error('Resource not found.')
@@ -135,6 +138,8 @@ export default () => {
 
     function handleInput(input: string): string | unknown {
         try {
+            console.log(input)
+
             if(setRomanRegex.test(input)) {
                 return handleTranslateNumber(input)
             } else if(setCreditsRegex.value.test(input)){
@@ -153,5 +158,5 @@ export default () => {
         }
     }
 
-    return { handleInput }
+    return { handleInput, translationMap, resourceCostMap, romanArabicMap }
 }

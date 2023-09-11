@@ -16,8 +16,9 @@ defineProps({
 .chat-messages {
   border: 1px solid black;
   height: 100px;
-  width: 300px;
+  width: 100%;
   border-radius: 10px;
   background-color: lightgrey;
+  overflow: scroll;
 }
 </style>
