@@ -1,3 +1,5 @@
+import {computed} from "vue";
+
 export default () => {
     const translationMap = new Map<string, string>();
     const romanArabicMap = new Map<string, number>([['I',1], ['V',5], ['X', 10],['L', 50],['C', 100],['D', 500],['M', 1000]])
@@ -9,9 +11,9 @@ export default () => {
     const howManyQuestionString = 'how many Credits is '
 
     // This regex should be dynamic. It requires already set translations.
-    function getSetCreditsRegex() {
+    const setCreditsRegex = computed<RegExp>(() => {
         return new RegExp(`(${Array.from(translationMap.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
-    }
+    })
 
     function getRomanNumberInArabicNumber(romanNumber: string): number {
         if(!romanNumberRegex.test(romanNumber)) {
@@ -58,7 +60,7 @@ export default () => {
         return getRomanNumberInArabicNumber(romanNumber)
     }
 
-    function handleTranslateNumber(input: string) {
+    function handleTranslateNumber(input: string): void {
         const intergalacticNumber = input.split(' ')[0]
         const romanNumber = input.split(' ')[2]
 
@@ -70,7 +72,7 @@ export default () => {
         return
     }
 
-    function handleSetResourceValue(input: string) {
+    function handleSetResourceValue(input: string): void {
         const resourceWithAmount = input.split(' is ')[0]
         const costWithAmount = Number(input.split(' is ')[1].split(' ')[0])
 
@@ -89,14 +91,14 @@ export default () => {
         resourceCostMap.set(resource, costPerResource)
     }
 
-    function handleHowMuchQuestion(input: string) {
+    function handleHowMuchQuestion(input: string): string {
         const intergalacticNumber = input.replace(howMuchQuestionString, '').replace('?', '')
 
         const arabicNumber = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
 
         return `${intergalacticNumber}is ${arabicNumber}`
     }
-    function handleHowManyQuestion(input: string) {
+    function handleHowManyQuestion(input: string): string {
         const numberAndResources = input.replace(howManyQuestionString, '').split(' ')
 
         const intergalacticNumber:Array<string> = []
@@ -135,20 +137,20 @@ export default () => {
         try {
             if(setRomanRegex.test(input)) {
                 return handleTranslateNumber(input)
-            } else if(getSetCreditsRegex().test(input)){
+            } else if(setCreditsRegex.value.test(input)){
                 return handleSetResourceValue(input)
             } else if(input.startsWith(howMuchQuestionString)) {
                 return handleHowMuchQuestion(input);
             } else if (input.startsWith(howManyQuestionString)) {
                 return handleHowManyQuestion(input)
+            } else {
+                console.log('Invalid input.')
+                return errorMessage
             }
         } catch (e) {
             console.log(e)
             return errorMessage
         }
-
-        console.log('Invalid input.')
-        return errorMessage
     }
 
     return { handleInput }
