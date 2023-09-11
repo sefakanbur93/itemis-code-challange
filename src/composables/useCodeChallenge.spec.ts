@@ -1,6 +1,8 @@
-import { handleInput} from "./code-challange";
+import useCodeChallenge from "./useCodeChallenge";
 
-describe("Code Challange", () => {
+describe("Code Challenge", () => {
+    const { handleInput } = useCodeChallenge()
+
     beforeEach(() => {
         handleInput('glob is I');
         handleInput('prok is V');
