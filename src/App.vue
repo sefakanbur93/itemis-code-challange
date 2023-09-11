@@ -5,9 +5,9 @@
       <input class="main__input" v-model="input" type="text">
       <button type="button" @click="sendMessage">send</button>
       <div class="main__info-table">
-        <InfoTable v-if="romanArabicMap.size > 0" :info-map="romanArabicMap"/>
-        <InfoTable v-if="translationMap.size > 0" :info-map="translationMap"/>
-        <InfoTable v-if="resourceCostMap.size > 0" :info-map="resourceCostMap"/>
+        <InfoTable v-if="romanArabicMap.size > 0" :info-map="romanArabicMap" col-name1="Roman" col-name2="Arabic"/>
+        <InfoTable v-if="translationMap.size > 0" :info-map="translationMap" col-name1="Intergalactic" col-name2="Roman"/>
+        <InfoTable v-if="resourceCostMap.size > 0" :info-map="resourceCostMap" col-name1="Resource" col-name2="Credits per pcs"/>
       </div>
     </div>
   </div>

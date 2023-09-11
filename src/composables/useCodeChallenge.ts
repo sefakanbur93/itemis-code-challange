@@ -12,7 +12,7 @@ export default () => {
 
     // This regex should be dynamic. It requires already set translations.
     const setCreditsRegex = computed<RegExp>(() => {
-        return new RegExp(`(${Array.from(translationMap.value.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`);
+        return new RegExp(`(${Array.from(translationMap.value.keys()).join('|')})\\s\\w+\\sis\\s\\d+\\sCredits`, 'i');
     })
 
     function getRomanNumberInArabicNumber(romanNumber: string): number {
@@ -97,7 +97,7 @@ export default () => {
     function handleHowMuchQuestion(input: string): string {
         const intergalacticNumber = input.replace(howMuchQuestionString, '').replace('?', '').trim()
 
-        const arabicNumber = getIntergalacticNumberInArabicNumber(intergalacticNumber.trim().split(' '))
+        const arabicNumber = getIntergalacticNumberInArabicNumber(intergalacticNumber.toLowerCase().trim().split(' '))
 
         return `${intergalacticNumber} is ${arabicNumber}`
     }
@@ -108,8 +108,8 @@ export default () => {
         let resource = ''
 
         for (let i=0; i< numberAndResources.length; i++) {
-            if(translationMap.value.has(numberAndResources[i])) {
-                intergalacticNumber.push(numberAndResources[i])
+            if(translationMap.value.has(numberAndResources[i].toLowerCase())) {
+                intergalacticNumber.push(numberAndResources[i].toLowerCase())
                 continue
             }
 
@@ -138,8 +138,6 @@ export default () => {
 
     function handleInput(input: string): string | unknown {
         try {
-            console.log(input)
-
             if(setRomanRegex.test(input)) {
                 return handleTranslateNumber(input)
             } else if(setCreditsRegex.value.test(input)){
