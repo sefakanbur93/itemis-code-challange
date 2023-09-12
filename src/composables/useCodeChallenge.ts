@@ -1,6 +1,13 @@
-import {computed, ref} from "vue";
+import {computed, Ref, ref} from "vue";
 
-export default () => {
+interface UseCodeChallenge {
+    handleInput(input: string): string,
+    translationMap: Ref<Map<string, string>>,
+    resourceCostMap: Ref<Map<string, number>>,
+    romanArabicMap: Map<string, number>
+}
+
+export default (): UseCodeChallenge => {
     const translationMap = ref(new Map<string, string>());
     const romanArabicMap = new Map<string, number>([['I',1], ['V',5], ['X', 10],['L', 50],['C', 100],['D', 500],['M', 1000]])
     const resourceCostMap = ref(new Map<string, number>())
@@ -61,7 +68,7 @@ export default () => {
         return getRomanNumberInArabicNumber(romanNumber)
     }
 
-    function getKeyByValue(map, searchValue) {
+    function getKeyByValue(map: Map<string, string | number>, searchValue: string | number) {
         for (let [key, value] of map.entries()) {
             if (value === searchValue)
                 return key;
@@ -76,7 +83,10 @@ export default () => {
             throw new Error('Roman number not found')
         }
         if(Array.from(translationMap.value.values()).includes(romanNumber)) {
-            translationMap.value.delete(getKeyByValue(translationMap.value, romanNumber))
+            const key = getKeyByValue(translationMap.value, romanNumber)
+            if (key) {
+                translationMap.value.delete(key)
+            }
         }
         translationMap.value.set(intergalacticNumber, romanNumber)
         return 'Ok !'
@@ -99,8 +109,11 @@ export default () => {
         const amountInArabicNumber = getIntergalacticNumberInArabicNumber(amountInIntergalacticNumber)
         const costPerResource = costWithAmount / amountInArabicNumber
 
-        if(Array.from(resourceCostMap.value.values()).includes(resource)) {
-            translationMap.value.delete(getKeyByValue(resourceCostMap.value, resource))
+        if(Array.from(resourceCostMap.value.values()).includes(Number(resource))) {
+            const key = getKeyByValue(resourceCostMap.value, resource)
+            if (key) {
+                translationMap.value.delete(key)
+            }
         }
         resourceCostMap.value.set(resource, costPerResource)
 
@@ -149,7 +162,7 @@ export default () => {
         return `${intergalacticNumber.join(' ')} ${resource} is ${cost} Credits`
     }
 
-    function handleInput(input: string): string | unknown {
+    function handleInput(input: string): string {
         try {
             if(setRomanRegex.test(input)) {
                 return handleTranslateNumber(input)

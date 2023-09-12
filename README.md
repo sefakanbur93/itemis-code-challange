@@ -8,4 +8,4 @@ npm run dev
 
 ## How to run test
 
-npm test
+npm run test
