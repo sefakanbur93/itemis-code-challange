@@ -4,7 +4,7 @@
       <ChatMessages :messages="messages" />
       <form class="main__form" @submit="sendMessage">
         <input class="main__input" v-model="input" type="text" placeholder="Type here...">
-        <button class="main__button" type="submit">send</button>
+        <button class="main__button" type="submit">Send</button>
       </form>
       <div class="main__info-table">
         <InfoTable v-if="romanArabicMap.size > 0" :info-map="romanArabicMap" col-name1="Roman" col-name2="Arabic"/>
