@@ -1,9 +1,11 @@
 <template>
   <div class="main">
     <div class="main__wrapper">
-      <ChatMessages :chat-messages="messages" />
-      <input class="main__input" v-model="input" type="text">
-      <button type="button" @click="sendMessage">send</button>
+      <ChatMessages :messages="messages" />
+      <form class="main__form" @submit="sendMessage">
+        <input class="main__input" v-model="input" type="text" placeholder="Type here...">
+        <button class="main__button" type="submit">send</button>
+      </form>
       <div class="main__info-table">
         <InfoTable v-if="romanArabicMap.size > 0" :info-map="romanArabicMap" col-name1="Roman" col-name2="Arabic"/>
         <InfoTable v-if="translationMap.size > 0" :info-map="translationMap" col-name1="Intergalactic" col-name2="Roman"/>
@@ -24,7 +26,8 @@ const messages = ref<Array<string>>([])
 
 const { handleInput, translationMap, resourceCostMap, romanArabicMap } = useCodeChallenge()
 
-function sendMessage() {
+function sendMessage(event) {
+  event.preventDefault();
   messages.value.push('Me: '+input.value)
   const result = handleInput(input.value)
   input.value = ''
@@ -39,7 +42,6 @@ function sendMessage() {
   justify-content: center;
 
   &__wrapper {
-    gap: 10px;
     margin-top: 20rem;
     display: flex;
     align-items: center;
@@ -54,8 +56,24 @@ function sendMessage() {
     justify-content: flex-start;
   }
 
+  &__button {
+    background-color: cadetblue;
+    width: 100px;
+    height: 30px;
+  }
+
+  &__form {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 5px;
+  }
+
   &__input {
     width: 100%;
+    border-radius: 5px;
+    margin-top: 5px;
   }
 }
 </style>

@@ -61,6 +61,13 @@ export default () => {
         return getRomanNumberInArabicNumber(romanNumber)
     }
 
+    function getKeyByValue(map, searchValue) {
+        for (let [key, value] of map.entries()) {
+            if (value === searchValue)
+                return key;
+        }
+    }
+
     function handleTranslateNumber(input: string): string {
         const intergalacticNumber = input.split(' ')[0]
         const romanNumber = input.split(' ')[2]
@@ -68,7 +75,9 @@ export default () => {
         if(!romanArabicMap.has(romanNumber)) {
             throw new Error('Roman number not found')
         }
-
+        if(Array.from(translationMap.value.values()).includes(romanNumber)) {
+            translationMap.value.delete(getKeyByValue(translationMap.value, romanNumber))
+        }
         translationMap.value.set(intergalacticNumber, romanNumber)
         return 'Ok !'
     }
@@ -89,6 +98,10 @@ export default () => {
         const resource = resourceWithAmount.replace(amountInIntergalacticNumber.join(' '), '').trim()
         const amountInArabicNumber = getIntergalacticNumberInArabicNumber(amountInIntergalacticNumber)
         const costPerResource = costWithAmount / amountInArabicNumber
+
+        if(Array.from(resourceCostMap.value.values()).includes(resource)) {
+            translationMap.value.delete(getKeyByValue(resourceCostMap.value, resource))
+        }
         resourceCostMap.value.set(resource, costPerResource)
 
         return 'Ok !'
