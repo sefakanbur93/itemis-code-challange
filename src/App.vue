@@ -28,10 +28,17 @@ const { handleInput, translationMap, resourceCostMap, romanArabicMap } = useCode
 
 function sendMessage(event) {
   event.preventDefault();
-  messages.value.push('Me: '+input.value)
+
+  if(input.value === '') {
+    return
+  }
+
+
   const result = handleInput(input.value)
-  input.value = ''
+  messages.value.push('Me: '+input.value)
   messages.value.push('Alien: '+result)
+  input.value = ''
+
 }
 
 </script>

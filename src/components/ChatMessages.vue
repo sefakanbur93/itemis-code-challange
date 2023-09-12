@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import {nextTick, ref, watch} from "vue";
 
 const props = defineProps({
   messages: Array<string>
@@ -16,7 +16,7 @@ const props = defineProps({
 const chatMessages = ref<HTMLElement>(null)
 
 watch(() => props.messages?.length, ()=> {
-  chatMessages.value.scrollTo(0, chatMessages.value.scrollHeight)
+  nextTick(() => chatMessages.value.scrollTo(0, chatMessages.value.scrollHeight))
 })
 
 </script>
